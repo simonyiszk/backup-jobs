@@ -22,10 +22,9 @@ var driveId string
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("Exporting all Outline collections to json")
-
 	readConfig()
 
+	log.Println("Exporting all Outline collections to json")
 	operationId, err := startExportOperation()
 	if err != nil {
 		log.Fatalln("Failed to start export operation", err)
@@ -51,7 +50,11 @@ func main() {
 	fileName := fmt.Sprintf("%s-outline-exported-collections-json.zip", today)
 	log.Println("Saving export to Google Drive:", fileName)
 
-	err = common.UploadToGoogleDrive(fileName, bytes.NewReader(data), parent, driveId, serviceAccountKey)
+	driveService, err := common.InitDriveService(context.Background(), serviceAccountKey)
+	if err != nil {
+		log.Fatalln("Failed to init Google Drive client:", err)
+	}
+	err = common.UploadToGoogleDrive(fileName, bytes.NewReader(data), parent, driveId, driveService)
 	if err != nil {
 		log.Fatalln("Failed to upload file to Google Drive:", err)
 	}

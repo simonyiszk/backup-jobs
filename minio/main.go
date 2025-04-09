@@ -25,9 +25,9 @@ func main() {
 	}
 	defer reader.Close()
 
-	log.Println("Uploading PostgreSQL dump to Google Drive")
+	log.Println("Uploading MinIO dump to Google Drive")
 	today := time.Now().Format(time.DateOnly)
-	fileName := fmt.Sprintf("%s-%s-postgresql.sql", today, driveFileName)
+	fileName := fmt.Sprintf("%s-%s-minio.tar.gz", today, driveFileName)
 	log.Println("Saving export to Google Drive:", fileName)
 
 	driveService, err := common.InitDriveService(context.Background(), serviceAccountKey)

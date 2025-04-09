@@ -9,15 +9,22 @@ import (
 	"log"
 )
 
-func UploadToGoogleDrive(fileName string, data io.Reader, parent, driveId, serviceAccountKey string) error {
-	ctx := context.Background()
-	srv, err := drive.NewService(ctx, option.WithCredentialsJSON([]byte(serviceAccountKey)))
-	if err != nil {
-		return fmt.Errorf("unable to retrieve Drive client: %v", err)
-	}
+func InitDriveService(ctx context.Context, serviceAccountKey string) (*drive.Service, error) {
+	return drive.NewService(ctx, option.WithCredentialsJSON([]byte(serviceAccountKey)))
+}
 
+func CreateDriveFolder(name, parent, driveId string, service *drive.Service) (string, error) {
+	driveFolder := &drive.File{Name: name, MimeType: "application/vnd.google-apps.folder", Parents: []string{parent}, DriveId: driveId}
+	folder, err := service.Files.Create(driveFolder).SupportsAllDrives(true).Do()
+	if err != nil {
+		return "", err
+	}
+	return folder.Id, nil
+}
+
+func UploadToGoogleDrive(fileName string, data io.Reader, parent, driveId string, service *drive.Service) error {
 	driveFile := &drive.File{Name: fileName, Parents: []string{parent}, DriveId: driveId}
-	uploadedFile, err := srv.Files.Create(driveFile).Media(data).SupportsAllDrives(true).Do()
+	uploadedFile, err := service.Files.Create(driveFile).Media(data).SupportsAllDrives(true).Do()
 	if err != nil {
 		return fmt.Errorf("unable to upload file: %v", err)
 	}
